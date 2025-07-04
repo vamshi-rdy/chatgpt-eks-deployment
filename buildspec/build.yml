@@ -1,0 +1,18 @@
+version: 0.2
+env:
+  variables:
+    ECR_URI: "<ACCOUNT>.dkr.ecr.<REGION>.amazonaws.com/springboot-app"
+phases:
+  pre_build:
+    commands:
+      - mvn clean package -DskipTests
+      - aws ecr get-login-password --region $AWS_REGION \
+          | docker login --username AWS --password-stdin $ECR_URI
+      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c1-7)
+  build:
+    commands:
+      - docker build -t $ECR_URI:$IMAGE_TAG .
+      - docker push $ECR_URI:$IMAGE_TAG
+artifacts:
+  files: ["**/*"]
+  name: build-output
