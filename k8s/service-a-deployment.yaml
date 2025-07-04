@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-a
+  namespace: prod
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: service-a }
+  template:
+    metadata:
+      labels: { app: service-a }
+    spec:
+      containers:
+      - name: service-a
+        image: <ECR_URI_A>:${IMAGE_TAG_A}
+        ports: [ { containerPort: 8080 } ]
+        env:
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: DB_PASSWORD
+        resources:
+          requests: { cpu: "500m", memory: "512Mi" }
+          limits: { cpu: "1", memory: "1Gi" }
+        readinessProbe:
+          httpGet: { path: /health, port: 8080 }
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        livenessProbe:
+          httpGet: { path: /health, port: 8080 }
+          initialDelaySeconds: 30
+          periodSeconds: 10
