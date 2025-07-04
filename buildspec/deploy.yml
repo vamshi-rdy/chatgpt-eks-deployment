@@ -1,0 +1,10 @@
+version: 0.2
+phases:
+  pre_build:
+    commands:
+      - aws eks update-kubeconfig --region $AWS_REGION --name prod-cluster
+  build:
+    commands:
+      - kubectl apply -f k8s/
+artifacts:
+  files: ["**/*"]
